@@ -9,12 +9,11 @@ let transporter = nodemailer.createTransport({
     }
 });
 
-
 const sendEmail = async (mailOptions) => {
     try{
     await transporter.sendMail(mailOptions);
     } catch (error) {
-      throw error
+      console.log(error)
     }
 }
 

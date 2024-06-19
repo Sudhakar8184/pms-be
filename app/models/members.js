@@ -22,6 +22,11 @@ var Memberschema = new Schema({
         trim: true,
         default: ''
     },
+    countryCode: {
+        type: String,
+        trim: true,
+        default: ''
+    },
     email: {
         type: String,
         trim: true,

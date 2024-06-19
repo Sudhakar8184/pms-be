@@ -10,7 +10,7 @@ async function sendMessages(to, message) {
             }
           };
           
-       return  axios.post('https://gate.whapi.cloud/messages/text',{to: to, body: message, typing_time:0}, options);
+       return await  axios.post('https://gate.whapi.cloud/messages/text',{to: to, body: message, typing_time:0}, options);
         console.log('Message sent successfully');
     } catch (error) {
         console.error('Error in sending message:', error);
