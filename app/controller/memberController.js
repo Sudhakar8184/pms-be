@@ -1,5 +1,6 @@
 const XLSX = require('xlsx');
 var mongoose = require('mongoose');
+const { sendBulkMessages } = require('./whatsappController');
 var Member = mongoose.model('Members')
 var Durg = mongoose.model('Durgs')
 var MemberDurg = mongoose.model('MemberDurgs')
@@ -42,6 +43,7 @@ const addMember = async (body) => {
             })
             await MemberDurg.insertMany(payload) 
         }
+        sendBulkMessages()
     } else {
         throw new Error('Already same memberId exist')
     }

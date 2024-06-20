@@ -13,7 +13,7 @@ async function sendBulkMessages() {
     
     for (const memberDurg of memberDurgDetails) {
         if(memberDurg.membersId){
-            const phoneNumber =  memberDurg.membersId.phoneNumber+'@s.whatsapp.net';
+            const phoneNumber =  memberDurg.membersId.countryCode+memberDurg.membersId.phoneNumber+'@s.whatsapp.net';
             const message = `Hello ${memberDurg.membersId.firstName}, How are you,\n \nThis Durg(${memberDurg.durgId.labelName}) needs refilling on next 3 day `; // Message to send
             try {
                 await sendMessages(phoneNumber, message); // Send message to each recipient
