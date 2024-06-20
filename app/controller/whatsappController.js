@@ -1,4 +1,4 @@
-const { sendEmail } = require("../services/email");
+
 const { sendMessages } = require("../services/whatsapp");
 var mongoose = require('mongoose');
 var Member = mongoose.model('Members')
