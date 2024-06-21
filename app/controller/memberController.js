@@ -51,6 +51,11 @@ const addMember = async (body) => {
     return result
 }
 
+const getMember = async (body) => {
+    let result = await Member.find({});
+
+    return result
+}
 
 const addDurgOnFile = async (req) => {
     const filePath = req.file.path;
@@ -82,5 +87,6 @@ module.exports = {
     addMemberOnFile,
     addMember,
     addDurgOnFile,
-    getDurgList
+    getDurgList,
+    getMember
 }

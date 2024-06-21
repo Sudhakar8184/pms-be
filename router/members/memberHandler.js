@@ -5,7 +5,7 @@ const { successResponse } = require('../../lib/successResponse');
 require('../../app/models/members')
 require('../../app/models/durgs')
 require('../../app/models/memberDurgs')
-const { addMemberOnFile, addMember, addDurgOnFile, getDurgList } = require('../../app/controller/memberController');
+const { addMemberOnFile, addMember, addDurgOnFile, getDurgList, getMember } = require('../../app/controller/memberController');
 const { sendBulkMessages } = require('../../app/controller/whatsappController');
 
 const addMemberOnFileHandler = async(req, res) => {
@@ -23,6 +23,17 @@ const addMemberHandler = async(req, res) => {
 
     try {
         const result = await addMember(req.body)
+        successResponse(res, result, 200)
+    } catch (err) {
+        errorResponse(res, err)
+    }
+   
+}
+
+const getMemberHandler = async(req, res) => {
+
+    try {
+        const result = await getMember(req.body)
         successResponse(res, result, 200)
     } catch (err) {
         errorResponse(res, err)
@@ -69,5 +80,6 @@ module.exports = {
     addMemberHandler,
     sendMemberMessageHandler,
     addDurgOnFileHandler,
-    getDurgListHandler
+    getDurgListHandler,
+    getMemberHandler
 }
