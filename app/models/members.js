@@ -51,7 +51,13 @@ var Memberschema = new Schema({
         type: String,
         trim: true,
         default: ''
-    }
+    },
+    memberDurgs: [
+        {
+        type: mongoose.Schema.ObjectId,
+        ref: "MemberDurgs",
+        },
+    ]
 },
     {
         timestamps: true

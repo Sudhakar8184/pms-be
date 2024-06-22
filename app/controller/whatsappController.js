@@ -7,7 +7,7 @@ var MemberDurg = mongoose.model('MemberDurgs')
 
 async function sendBulkMessages() {
     // let memberDetails = await Member.find({ lastTrigged: null });
-    const memberDurgDetails = await MemberDurg.find({lastTrigged: null}).populate('membersId').populate('durgId')
+    const memberDurgDetails = await MemberDurg.find({lastTrigged: null}).populate('member').populate('durgId')
 
    
     
