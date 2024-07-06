@@ -4,6 +4,7 @@ require('dotenv').config()
 const bodyparser = require('body-parser');
 const router = require('./router/index');
 require('./config/db')
+require('./app/services/cron')
 const app = express();
 const port = 3000;
 app.use(cors())

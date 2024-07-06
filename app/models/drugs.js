@@ -1,6 +1,6 @@
 const mongoose = require('mongoose')
 let Schema = mongoose.Schema
-var Durgschema = new Schema({
+var Drugschema = new Schema({
     ndc: {
         type: String,
         trim: true,
@@ -27,4 +27,4 @@ var Durgschema = new Schema({
         timestamps: true
     })
 
-module.exports = mongoose.model('Durgs', Durgschema)
+module.exports = mongoose.model('Drugs', Drugschema)

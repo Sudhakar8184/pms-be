@@ -1,38 +1,35 @@
 
+const { startOfDay, endOfDay } = require("date-fns");
+const { calculateNextTriggedDate } = require("../../lib/utils");
 const { sendMessages } = require("../services/whatsapp");
 var mongoose = require('mongoose');
-var Member = mongoose.model('Members')
-var MemberDurg = mongoose.model('MemberDurgs')
+var MemberDrug = mongoose.model('MemberDrugs')
 
 
 async function sendBulkMessages() {
-    // let memberDetails = await Member.find({ lastTrigged: null });
-    const memberDurgDetails = await MemberDurg.find({lastTrigged: null}).populate('member').populate('durgId')
+    try {
+    const memberDrugDetails = await MemberDrug.find({nextTrigged: {$gte: startOfDay(new Date()), $lt: endOfDay(new Date())}, isActive:1, deleteAt: null }).populate('member').populate('drug')
 
-   
-    
-    for (const memberDurg of memberDurgDetails) {
-        if(memberDurg.member){
-            const phoneNumber =  memberDurg.member.countryCode+memberDurg.member.phoneNumber+'@s.whatsapp.net';
-            const message = `Hello ${memberDurg.member.firstName}, How are you,\n \nThis Durg(${memberDurg.durgId.labelName}) needs refilling on next 3 day `; // Message to send
+    for (const memberDrug of memberDrugDetails) {
+        if(memberDrug.member){
+            const phoneNumber =  memberDrug.member.countryCode+memberDrug.member.phoneNumber+'@s.whatsapp.net';
+            const message = `Hello ${memberDrug.member.firstName}, How are you,\n \nThis Drug(${memberDrug.drug.labelName}) needs refilling on next 3 day `; // Message to send
             try {
                 await sendMessages(phoneNumber, message); // Send message to each recipient
+                // let days =  memberDrug.days > 3 ? memberDrug.days-3 : memberDrug.days;
+                let nextTrigged = calculateNextTriggedDate(memberDrug.nextTrigged, memberDrug.days)
+                let triggerCount = memberDrug.triggerCount ? memberDrug.triggerCount : 1
+                await MemberDrug.updateOne({_id: memberDrug._id}, {lastTrigged: Date.now(), nextTrigged, triggerCount})   
             } catch (error) {
-                   console.error(`Error sending message to ${recipient}:`, error);
+                   console.error(`Error sending message to ${JSON.stringify(memberDrug)}:`, error);
             }
-            // if(member.email) {
-                // let mailOptions = {
-                //     from: 'sudhakar29619@gmail.com', // Sender address
-                //     to: 'sudhakar29619@gmail.com', // List of recipients
-                //     subject: 'Hello from Node.js', // Subject line
-                //     text: 'Hello !', // Plain text body
-                //     html: '<b>Hello world!</b>' // HTML body
-                // };
-                // await sendEmail(mailOptions)
-            // }
-            await MemberDurg.updateOne({_id: memberDurg._id}, {lastTrigged: Date.now()})        }
-       
+              
+        }
     }
+   } catch(err){
+      console.log(err)
+   }
+     
 }
 
 

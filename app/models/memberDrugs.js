@@ -1,16 +1,20 @@
 const mongoose = require('mongoose')
 let Schema = mongoose.Schema
-var MemberDurgschema = new Schema({
+var MemberDrugschema = new Schema({
     member:
         {type: Schema.Types.ObjectId, ref: 'Members'},
-    durgId:
-        {type: Schema.Types.ObjectId, ref: 'Durgs'},
+    drug:
+        {type: Schema.Types.ObjectId, ref: 'Drugs'},
     days: {
-        type: String,
+        type: Number,
         trim: true,
-        default: ''
     },
     lastTrigged: {
+        type: Date,
+        trim: true,
+        default: null
+    },
+    nextTrigged: {
         type: Date,
         trim: true,
         default: null
@@ -31,16 +35,21 @@ var MemberDurgschema = new Schema({
         default: null
     },
     isActive: {
-        type: Number,
+        type: Boolean,
     },
     deletedAt: {
         type: Date,
         trim: true,
         default: null
-    }
+    },
+    triggerCount: {
+        type: Number,
+        trim: true,
+        default: 0
+    },
 },
     {
         timestamps: true
     })
 
-module.exports = mongoose.model('MemberDurgs', MemberDurgschema)
+module.exports = mongoose.model('MemberDrugs', MemberDrugschema)

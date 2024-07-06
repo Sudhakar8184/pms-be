@@ -17,3 +17,4 @@ db.once('open', () => {
     console.log('Connected to the database');
     // Your application logic here
 });
+module.exports = db

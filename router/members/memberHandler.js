@@ -3,9 +3,10 @@
 const { errorResponse } = require('../../lib/errorResponse');
 const { successResponse } = require('../../lib/successResponse');
 require('../../app/models/members')
-require('../../app/models/durgs')
-require('../../app/models/memberDurgs')
-const { addMemberOnFile, addMember, addDurgOnFile, getDurgList, getMember } = require('../../app/controller/memberController');
+require('../../app/models/drugs')
+require('../../app/models/memberDrugs')
+require('../../app/models/user')
+const { addMemberOnFile, addMember, addDrugOnFile, getDrugList, getMember, getNotificationList } = require('../../app/controller/memberController');
 const { sendBulkMessages } = require('../../app/controller/whatsappController');
 
 const addMemberOnFileHandler = async(req, res) => {
@@ -52,10 +53,10 @@ const sendMemberMessageHandler = async(req, res) => {
    
 }
 
-const addDurgOnFileHandler = async(req, res) => {
+const addDrugOnFileHandler = async(req, res) => {
 
     try {
-        const result = await addDurgOnFile(req)
+        const result = await addDrugOnFile(req)
         successResponse(res, result, 200)
     } catch (err) {
         errorResponse(res, err)
@@ -63,10 +64,21 @@ const addDurgOnFileHandler = async(req, res) => {
    
 }
 
-const getDurgListHandler = async(req, res) => {
+const getDrugListHandler = async(req, res) => {
 
     try {
-        const result = await getDurgList(req)
+        const result = await getDrugList(req)
+        successResponse(res, result, 200)
+    } catch (err) {
+        errorResponse(res, err)
+    }
+   
+}
+
+const getNotificationListHandler = async(req, res) => {
+
+    try {
+        const result = await getNotificationList(req)
         successResponse(res, result, 200)
     } catch (err) {
         errorResponse(res, err)
@@ -79,7 +91,8 @@ module.exports = {
     addMemberOnFileHandler,
     addMemberHandler,
     sendMemberMessageHandler,
-    addDurgOnFileHandler,
-    getDurgListHandler,
-    getMemberHandler
+    addDrugOnFileHandler,
+    getDrugListHandler,
+    getMemberHandler,
+    getNotificationListHandler
 }

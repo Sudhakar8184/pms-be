@@ -1,10 +1,11 @@
 const XLSX = require('xlsx');
 var mongoose = require('mongoose');
 const { sendBulkMessages } = require('./whatsappController');
-const { calculateEndDate } = require('../../lib/utils');
+const { calculateEndDate, calculateNextTriggedDate } = require('../../lib/utils');
+const { startOfDay, endOfDay, format } = require('date-fns');
 var Member = mongoose.model('Members')
-var Durg = mongoose.model('Durgs')
-var MemberDurg = mongoose.model('MemberDurgs')
+var Drug = mongoose.model('Drugs')
+var MemberDrug = mongoose.model('MemberDrugs')
 
 const addMemberOnFile = async (req) => {
     const filePath = req.file.path;
@@ -24,60 +25,108 @@ const addMemberOnFile = async (req) => {
 
 
 const addMember = async (body) => {
-    let memberDetails = await Member.find({ memberId: body.memberId }).count();
-    let result
-    if (!memberDetails) {
-        const durgList = body.durgList;
-        delete body.durgList
-        var member = new Member(body);
-        result = await member.save()
-        if (result) {
-            const member = await Member.findById(result._id);
-            let payload = []
-            durgList.forEach((durg) => {
-                let endValue = null
-                if (durg.endDate) {
-                    months = durg.endDate.replace('Month', '').trim()
-                    endValue = calculateEndDate(new Date(), months)
+    const session = await mongoose.startSession();
+    try {
+        session.startTransaction();
+        let memberDetails = await Member.find({ memberId: body.memberId }).count();
+        let member
+        if (!memberDetails || body._id) {
+            const memberDrugs = body.memberDrugs;
+            delete body.memberDrugs
+            // member = new Member(body);
+            // member = await member.save({session})
+            const member = await Member.findOneAndUpdate({ memberId: body.memberId }, { $set: body }, { session, upsert: true, new: true, setDefaultsOnInsert: true })
+            if (member) {
+                let memberDrugList = member.memberDrugs
+                for (drug of memberDrugs) {
+                    let endValue = null
+                    let nextTrigged = null
+                    let existingData
+                    drug.effectiveDate = startOfDay(drug.effectiveDate)
+                    if (drug._id) {
+                        existingData = await MemberDrug.findOne({ _id: drug._id })
+                    }
+                    if (existingData) {
+                        if (existingData.endDate != drug.endDate) {
+                            months = drug.endDate.match(/\d+/gmi)
+                            if (months && months.length)
+                                endValue = calculateEndDate(new Date(), Number(months[0]))
+                        } else {
+                            endValue = existingData.endValue 
+                        }
+                        if (format(existingData.effectiveDate, 'MM/dd/yyyy') != format(drug.effectiveDate, 'MM/dd/yyyy')) {
+                            let days = drug.days > 3 ? drug.days - 3 : drug.days;
+                            nextTrigged = calculateNextTriggedDate(drug.effectiveDate, days)
+                        } else {
+                            if (existingData.days != drug.days) {
+                                let days = drug.days > 3 ? drug.days - 3 : drug.days;
+                                nextTrigged = calculateNextTriggedDate(drug.effectiveDate, days)
+                            } else {
+                                nextTrigged = existingData.nextTrigged
+                            }
+                        }
+                       
+                    } else {
+                        if (drug.endDate) {
+                            months = drug.endDate.match(/\d+/gmi)
+                            if (months && months.length)
+                                endValue = calculateEndDate(new Date(), Number(months[0]))
+                        }
+                        if (drug.effectiveDate) {
+                            let days = drug.days > 3 ? drug.days - 3 : drug.days;
+                            nextTrigged = calculateNextTriggedDate(drug.effectiveDate, days)
+                        }
+                    }
+
+                    let payload = {
+                        drug: drug.drug._id,
+                        member: member._id,
+                        days: drug.days,
+                        endDate: drug.endDate,
+                        endValue: endValue,
+                        effectiveDate: drug.effectiveDate,
+                        isActive: drug.isActive,
+                        nextTrigged
+                    }
+                    if (drug._id) {
+                        payload._id = drug._id
+                    }
+                    const memberDrugDetails = await MemberDrug.findOneAndUpdate({ member: payload.member, drug: payload.drug }, { $set: payload }, { session, upsert: true, new: true, setDefaultsOnInsert: true })
+                    if (!drug._id) {
+                        memberDrugList.push(memberDrugDetails._id)
+                    }
                 }
-                payload.push({
-                    durgId: durg.durgDetails._id,
-                    member: result._id,
-                    days: durg.days,
-                    endDate: durg.endDate,
-                    endVlaue: endValue,
-                    effectiveDate: durg.effectiveDate,
-                    isActive: 1
-                })
-            })
-            const memberDurg = await MemberDurg.insertMany(payload)
-            memberDurg.forEach((ele) => {
-                member.memberDurgs.push(ele._id)
-            })
-           await member.save()
+                await Member.updateOne({ _id: member._id }, { $set: { memberDrugs: memberDrugList } }, { session, upsert: true })
+                await session.commitTransaction();
+                session.endSession();
+            }
+            sendBulkMessages()
+        } else {
+            throw new Error('Already same memberId exist')
         }
-        sendBulkMessages()
-    } else {
-        throw new Error('Already same memberId exist')
+        console.log(body)
+        return member
+    } catch (err) {
+        await session.abortTransaction();
+        session.endSession();
+        throw err
     }
-    console.log(body)
-    return result
 }
 
 const getMember = async (body) => {
-    let result = await Member.find({}).sort({
+    let member = await Member.find({}).sort({
         createdAt: -1
-      }).populate({
-        path: 'memberDurgs',
+    }).populate({
+        path: 'memberDrugs',
         populate: {
-          path: 'durgId',
+            path: 'drug',
         }
-      });
+    });
 
-    return result
+    return member
 }
 
-const addDurgOnFile = async (req) => {
+const addDrugOnFile = async (req) => {
     const filePath = req.file.path;
 
     // Process Excel file
@@ -85,25 +134,43 @@ const addDurgOnFile = async (req) => {
     const sheetName = workbook.SheetNames[0];
     const worksheet = workbook.Sheets[sheetName];
     const data = XLSX.utils.sheet_to_json(worksheet);
-    await Durg.insertMany(data)
+    await Drug.insertMany(data)
     return data
 }
 
-const getDurgList = async (req) => {
+const getDrugList = async (req) => {
     const params = req.query.search;
-    let durgList;
+    let drugList;
     if (params) {
-        durgList = await Durg.find({ labelName: new RegExp(params, 'i') }).limit(10)
+        drugList = await Drug.find({ labelName: new RegExp(params, 'i') }).limit(10)
     } else {
-        durgList = await Durg.find({}).limit(10)
+        drugList = await Drug.find({}).limit(10)
     }
-    return durgList
+    return drugList
+}
+
+
+const getNotificationList = async (req) => {
+    const params = req.query.search;
+    let member = await Member.find({}).sort({
+        createdAt: -1
+    }).populate({
+        path: 'memberDrugs',
+        match: { nextTrigged: { $gte: startOfDay(new Date(params)), $lt: endOfDay(new Date(params)) }, isActive: 1 },
+        populate: {
+            path: 'drug',
+        }
+    });
+    member = member.filter((ele) => ele.memberDrugs.length)
+
+    return member
 }
 
 module.exports = {
     addMemberOnFile,
     addMember,
-    addDurgOnFile,
-    getDurgList,
-    getMember
+    addDrugOnFile,
+    getDrugList,
+    getMember,
+    getNotificationList
 }

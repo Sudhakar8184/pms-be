@@ -17,6 +17,11 @@ var Memberschema = new Schema({
         trim: true,
         default: ''
     },
+    gender: {
+        type: String,
+        trim: true,
+        default: ''
+    },
     phoneNumber: {
         type: String,
         trim: true,
@@ -52,10 +57,10 @@ var Memberschema = new Schema({
         trim: true,
         default: ''
     },
-    memberDurgs: [
+    memberDrugs: [
         {
         type: mongoose.Schema.ObjectId,
-        ref: "MemberDurgs",
+        ref: "MemberDrugs",
         },
     ]
 },
