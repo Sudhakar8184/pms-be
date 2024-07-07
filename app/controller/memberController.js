@@ -100,7 +100,6 @@ const addMember = async (body) => {
                 await session.commitTransaction();
                 session.endSession();
             }
-            sendBulkMessages()
         } else {
             throw new Error('Already same memberId exist')
         }
