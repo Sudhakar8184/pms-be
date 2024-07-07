@@ -50,7 +50,7 @@ const addMember = async (body) => {
                         if (existingData.endDate != drug.endDate) {
                             months = drug.endDate.match(/\d+/gmi)
                             if (months && months.length)
-                                endValue = calculateEndDate(new Date(), Number(months[0]))
+                                endValue = calculateEndDate(drug.effectiveDate, Number(months[0]))
                         } else {
                             endValue = existingData.endValue 
                         }
@@ -70,7 +70,7 @@ const addMember = async (body) => {
                         if (drug.endDate) {
                             months = drug.endDate.match(/\d+/gmi)
                             if (months && months.length)
-                                endValue = calculateEndDate(new Date(), Number(months[0]))
+                                endValue = calculateEndDate(drug.effectiveDate, Number(months[0]))
                         }
                         if (drug.effectiveDate) {
                             let days = drug.days > 3 ? drug.days - 3 : drug.days;

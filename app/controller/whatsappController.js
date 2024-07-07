@@ -1,5 +1,5 @@
 
-const { startOfDay, endOfDay } = require("date-fns");
+const { startOfDay, endOfDay, isBefore } = require("date-fns");
 const { calculateNextTriggedDate } = require("../../lib/utils");
 const { sendMessages } = require("../services/whatsapp");
 var mongoose = require('mongoose');
@@ -18,8 +18,10 @@ async function sendBulkMessages() {
                 await sendMessages(phoneNumber, message); // Send message to each recipient
                 // let days =  memberDrug.days > 3 ? memberDrug.days-3 : memberDrug.days;
                 let nextTrigged = calculateNextTriggedDate(memberDrug.nextTrigged, memberDrug.days)
-                let triggerCount = memberDrug.triggerCount ? memberDrug.triggerCount : 1
-                await MemberDrug.updateOne({_id: memberDrug._id}, {lastTrigged: Date.now(), nextTrigged, triggerCount})   
+                if(isBefore(nextTrigged, memberDrug.endValue)){
+                    let triggerCount = memberDrug.triggerCount ? memberDrug.triggerCount : 1
+                    await MemberDrug.updateOne({_id: memberDrug._id}, {lastTrigged: Date.now(), nextTrigged, triggerCount})   
+                }
             } catch (error) {
                    console.error(`Error sending message to ${JSON.stringify(memberDrug)}:`, error);
             }
