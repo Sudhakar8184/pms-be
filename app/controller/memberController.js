@@ -113,6 +113,7 @@ const addMember = async (body) => {
 }
 
 const getMember = async (body) => {
+    console.log("member list")
     let member = await Member.find({}).sort({
         createdAt: -1
     }).populate({
