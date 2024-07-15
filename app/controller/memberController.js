@@ -151,7 +151,7 @@ const getDrugList = async (req) => {
 
 
 const getNotificationList = async (req) => {
-    const params = req.query.search;
+    const params = req.query.search || new Date();
     let member = await Member.find({}).sort({
         createdAt: -1
     }).populate({
