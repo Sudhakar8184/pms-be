@@ -3,6 +3,7 @@ const { sendBulkMessages } = require('../controller/whatsappController');
 
 const job = cron.schedule('* */5 * * *', async() => {
     console.log('cron job started...')
+    console.log(new Date())
     await sendBulkMessages()
     console.log('cron job ended...')
 });
