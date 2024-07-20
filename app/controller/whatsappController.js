@@ -15,12 +15,14 @@ async function sendBulkMessages() {
             const phoneNumber =  memberDrug.member.countryCode+memberDrug.member.phoneNumber+'@s.whatsapp.net';
             const message = `Hello ${memberDrug.member.firstName}, How are you,\n \nThis Drug(${memberDrug.drug.labelName}) needs refilling on next 3 day `; // Message to send
             try {
-                await sendMessages(phoneNumber, message); // Send message to each recipient
+                const result = await sendMessages(phoneNumber, message); // Send message to each recipient
                 // let days =  memberDrug.days > 3 ? memberDrug.days-3 : memberDrug.days;
-                let nextTrigged = calculateNextTriggedDate(memberDrug.nextTrigged, memberDrug.days)
-                if(isBefore(nextTrigged, memberDrug.endValue)){
-                    let triggerCount = memberDrug.triggerCount ? memberDrug.triggerCount : 1
-                    await MemberDrug.updateOne({_id: memberDrug._id}, {lastTrigged: Date.now(), nextTrigged, triggerCount})   
+                if(result.success) {
+                    let nextTrigged = calculateNextTriggedDate(memberDrug.nextTrigged, memberDrug.days)
+                    if(isBefore(nextTrigged, memberDrug.endValue)){
+                        let triggerCount = memberDrug.triggerCount ? memberDrug.triggerCount : 1
+                        await MemberDrug.updateOne({_id: memberDrug._id}, {lastTrigged: Date.now(), nextTrigged, triggerCount})   
+                    }
                 }
             } catch (error) {
                    console.error(`Error sending message to ${JSON.stringify(memberDrug)}:`, error);

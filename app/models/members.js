@@ -7,6 +7,11 @@ var Memberschema = new Schema({
         default: '',
         unique: true
     },
+    prefix: {
+        type: String,
+        trim: true,
+        default: ''
+    },
     firstName: {
         type: String,
         trim: true,

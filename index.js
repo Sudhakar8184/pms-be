@@ -6,10 +6,14 @@ const router = require('./router/index');
 require('./config/db')
 require('./app/services/cron')
 const app = express();
-const port = 3000;
+const port = 3001;
 app.use(cors())
 app.use(bodyparser())
 app.use('/api',router);
+
+setInterval(() => {
+   console.log('setinterval',new Date())
+}, 600000);
 
 app.listen(port, () => {
   console.log(`Server is running on http://localhost:${port}`);
