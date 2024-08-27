@@ -3,7 +3,7 @@ const multer = require('multer');
 const { addMemberOnFileHandler, addMemberHandler, sendMemberMessageHandler, addDrugOnFileHandler, getDrugListHandler, getMemberHandler, getNotificationListHandler } = require('./memberHandler');
 const { auth } = require('../../app/services/middleware');
 const upload = multer({ dest: 'uploads/' });
-router.get('/send-member-message', sendMemberMessageHandler )
+router.get('/send-message', sendMemberMessageHandler )
 
 router.use(auth)
 router.post('/add-member-file', upload.single('excelFile'), addMemberOnFileHandler )
@@ -15,4 +15,5 @@ router.get('/get-member', getMemberHandler )
 
 router.get('/get-drug-list', getDrugListHandler )
 router.get('/get-notification-list', getNotificationListHandler )
+router.get('/send-member-message/:memberDrugId', sendMemberMessageHandler )
 module.exports = router

@@ -1,5 +1,5 @@
 const axios = require('axios')
-async function sendMessages(to, message) {
+async function sendMessages(to, message, memberDrugId) {
     try {
         const options = {
             method: 'POST',
@@ -17,8 +17,8 @@ async function sendMessages(to, message) {
         }
     } catch (error) {
         console.error('Error in sending message:', error);
-        return {
-            success: false
+        if(memberDrugId){
+            throw error
         }
     }
 }

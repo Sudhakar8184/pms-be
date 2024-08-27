@@ -46,7 +46,7 @@ const sendMemberMessageHandler = async(req, res) => {
 
     try {
         const result = await sendBulkMessages(req)
-        successResponse(res, result, 200)
+        successResponse(res, {message: 'message send successfully'}, 200)
     } catch (err) {
         errorResponse(res, err)
     }
