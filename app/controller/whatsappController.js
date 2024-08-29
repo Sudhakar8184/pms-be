@@ -9,8 +9,8 @@ var MemberDrug = mongoose.model('MemberDrugs')
 async function sendBulkMessages(req, res) {
     try {
          let memberDrugDetails
-        if(req.params.memberDrugId){
-            memberDrugDetails = await MemberDrug.find({_id: req.params.memberDrugId}).populate('member').populate('drug')
+        if(req &&req?.params?.memberDrugId){
+            memberDrugDetails = await MemberDrug.find({_id: req?.params?.memberDrugId}).populate('member').populate('drug')
         } else {
             memberDrugDetails = await MemberDrug.find({nextTrigged: {$gte: startOfDay(subDays(new Date(), 1)), $lt: endOfDay(new Date())}, isActive:1, deleteAt: null }).populate('member').populate('drug')
 
@@ -22,11 +22,11 @@ async function sendBulkMessages(req, res) {
             const phoneNumber =  memberDrug.member.countryCode+memberDrug.member.phoneNumber+'@s.whatsapp.net';
             const message = `Hello ${memberDrug.member.firstName}, How are you,\n \nThis Drug(${memberDrug.drug.labelName}) needs refilling on next 3 day `; // Message to send
             try {
-                const result = await sendMessages(phoneNumber, message, req.params.memberDrugId); // Send message to each recipient
+                const result = await sendMessages(phoneNumber, message, req?.params?.memberDrugId); // Send message to each recipient
                 // let days =  memberDrug.days > 3 ? memberDrug.days-3 : memberDrug.days;
                 if(result.success) {
                     let nextTrigged
-                    if(req.params.memberDrugId){
+                    if(req && req?.params?.memberDrugId){
                         nextTrigged  = calculateNextTriggedDate(new Date(), memberDrug.days)
                     } else {
                         nextTrigged  = calculateNextTriggedDate(memberDrug.nextTrigged, memberDrug.days)
@@ -45,7 +45,7 @@ async function sendBulkMessages(req, res) {
                
             } catch (error) {
                    console.error(`Error sending message to ${JSON.stringify(memberDrug)}:`, error);
-                    if(req.params.memberDrugId){
+                    if(req && req?.params?.memberDrugId){
                         throw error.response.data.error || error
                     }
             }
