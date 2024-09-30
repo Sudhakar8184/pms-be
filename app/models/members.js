@@ -1,11 +1,11 @@
 const mongoose = require('mongoose')
 let Schema = mongoose.Schema
+const AutoIncrement = require('mongoose-sequence')(mongoose);
+
 var Memberschema = new Schema({
     memberId: {
-        type: String,
-        trim: true,
-        default: '',
-        unique: true
+        type: Number,
+        unique: true,
     },
     prefix: {
         type: String,
@@ -67,10 +67,17 @@ var Memberschema = new Schema({
         type: mongoose.Schema.ObjectId,
         ref: "MemberDrugs",
         },
-    ]
+    ],
+    dob: {
+        type: Date,
+        trim: true,
+        default: null
+    },
 },
     {
         timestamps: true
     })
+
+    Memberschema.plugin(AutoIncrement, { inc_field: 'memberId', start_seq: 1000 });
 
 module.exports = mongoose.model('Members', Memberschema)

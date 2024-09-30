@@ -6,6 +6,7 @@ require('../../app/models/members')
 require('../../app/models/drugs')
 require('../../app/models/memberDrugs')
 require('../../app/models/user')
+require('../../app/models/counter')
 const { addMemberOnFile, addMember, addDrugOnFile, getDrugList, getMember, getNotificationList } = require('../../app/controller/memberController');
 const { sendBulkMessages } = require('../../app/controller/whatsappController');
 
@@ -23,7 +24,8 @@ const addMemberOnFileHandler = async(req, res) => {
 const addMemberHandler = async(req, res) => {
 
     try {
-        const result = await addMember(req.body)
+        const {timezone} = req.headers
+        const result = await addMember(req.body, timezone)
         successResponse(res, result, 200)
     } catch (err) {
         errorResponse(res, err)
@@ -34,7 +36,8 @@ const addMemberHandler = async(req, res) => {
 const getMemberHandler = async(req, res) => {
 
     try {
-        const result = await getMember(req.body)
+        const {timezone} = req.headers
+        const result = await getMember(req.body, timezone)
         successResponse(res, result, 200)
     } catch (err) {
         errorResponse(res, err)

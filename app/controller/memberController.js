@@ -1,11 +1,12 @@
 const XLSX = require('xlsx');
 var mongoose = require('mongoose');
-const { sendBulkMessages } = require('./whatsappController');
 const { calculateEndDate, calculateNextTriggedDate } = require('../../lib/utils');
 const { startOfDay, endOfDay, format } = require('date-fns');
+const {defaultTimezoneVlaue}  = require('../../lib/config');
 var Member = mongoose.model('Members')
 var Drug = mongoose.model('Drugs')
 var MemberDrug = mongoose.model('MemberDrugs')
+const moment = require('moment-timezone');
 
 const addMemberOnFile = async (req) => {
     const filePath = req.file.path;
@@ -24,7 +25,8 @@ const addMemberOnFile = async (req) => {
 }
 
 
-const addMember = async (body) => {
+const addMember = async (body, timezone = null) => {
+    timezone = timezone || defaultTimezoneVlaue
     const session = await mongoose.startSession();
     try {
         session.startTransaction();
@@ -35,7 +37,18 @@ const addMember = async (body) => {
             delete body.memberDrugs
             // member = new Member(body);
             // member = await member.save({session})
-            const member = await Member.findOneAndUpdate({ memberId: body.memberId }, { $set: body }, { session, upsert: true, new: true, setDefaultsOnInsert: true })
+            delete body.memberId
+            let member;
+            if(body.dob){
+                body.dob = moment.tz(body.dob, timezone); // Parse in New York timezone
+            }
+
+            if(body._id){
+                member = await Member.findOneAndUpdate({ _id: body._id }, { $set: body }, { session, upsert: true, new: true, setDefaultsOnInsert: true })
+            } else {
+                member = new Member(body)
+                member = await member.save({session})
+            }
             if (member) {
                 let memberDrugList = member.memberDrugs
                 for (drug of memberDrugs) {
@@ -86,6 +99,8 @@ const addMember = async (body) => {
                         endValue: endValue,
                         effectiveDate: drug.effectiveDate,
                         isActive: drug.isActive,
+                        remarks: drug.remarks,
+                        comments: drug.comments,
                         nextTrigged
                     }
                     if (drug._id) {

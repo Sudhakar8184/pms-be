@@ -47,6 +47,16 @@ var MemberDrugschema = new Schema({
         trim: true,
         default: 0
     },
+    remarks: {
+        type: String,
+        trim: true,
+        default: null
+    },
+    comments: {
+        type: String,
+        trim: true,
+        default: null
+    },
 },
     {
         timestamps: true
