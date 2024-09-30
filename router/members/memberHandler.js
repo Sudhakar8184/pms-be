@@ -6,7 +6,6 @@ require('../../app/models/members')
 require('../../app/models/drugs')
 require('../../app/models/memberDrugs')
 require('../../app/models/user')
-require('../../app/models/counter')
 const { addMemberOnFile, addMember, addDrugOnFile, getDrugList, getMember, getNotificationList } = require('../../app/controller/memberController');
 const { sendBulkMessages } = require('../../app/controller/whatsappController');
 
